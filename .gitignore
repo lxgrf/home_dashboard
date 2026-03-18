@@ -9,6 +9,8 @@ ENV/
 __pycache__/
 *.py[cod]
 *$py.class
+app/__pycache__/
+viewer/__pycache__/
 
 # Temporary Image Files
 *.png

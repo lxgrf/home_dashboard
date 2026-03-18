@@ -24,6 +24,7 @@ def render_dashboard(weather_state, sensor_state):
 
     # Variables
     w_temp = weather_state.current_temp if weather_state.current_temp is not None else "--"
+    w_rh = weather_state.current_rh if weather_state.current_rh is not None else "--"
     w_code = weather_state.weather_code
     w_day = weather_state.is_day
 
@@ -32,7 +33,7 @@ def render_dashboard(weather_state, sensor_state):
 
     # ========= LEFT PANE: Weather & Sensor (x: 0-190) =========
     # Outdoor
-    draw.text((10, 5), "OUTDOOR", font=font_med, fill=(0, 0, 0))
+    draw.text((10, 0), "OUTDOOR", font=font_med, fill=(0, 0, 0))
     if w_code is not None:
         try:
             icon = get_weather_icon(w_code, w_day, size="2x")
@@ -42,26 +43,27 @@ def render_dashboard(weather_state, sensor_state):
         except Exception:
             pass
             
-    draw.text((10, 30), f"{w_temp}°", font=font_huge, fill=(0, 0, 0))
+    draw.text((10, 24), f"{w_temp}°", font=font_huge, fill=(0, 0, 0))
+    draw.text((10, 88), f"RH: {w_rh}%", font=font_small, fill=(100, 100, 100))
 
     # Indoor
-    draw.text((10, 100), "INDOOR", font=font_med, fill=(0, 0, 0))
-    draw.text((10, 125), f"{in_temp}°", font=font_huge, fill=(0, 0, 0))
+    draw.text((10, 116), "INDOOR", font=font_med, fill=(0, 0, 0))
+    draw.text((10, 140), f"{in_temp}°", font=font_huge, fill=(0, 0, 0))
     # Place RH below the INDOOR temp but nicely aligned
-    draw.text((10, 190), f"RH: {in_rh}%", font=font_small, fill=(100, 100, 100))
+    draw.text((10, 204), f"RH: {in_rh}%", font=font_small, fill=(100, 100, 100))
 
     draw.line((210, 10, 210, 290), fill=(0, 0, 0), width=3)
 
     # Forecast Row (Bottom Left - Space out wider)
-    draw.text((10, 225), "FORECAST", font=font_xsmall, fill=(0, 0, 0))
+    draw.text((10, 236), "FORECAST", font=font_xsmall, fill=(0, 0, 0))
     if hasattr(weather_state, 'hourly_forecast') and weather_state.hourly_forecast:
         x_off = 10
         for idx in [2, 5, 8]:
             if idx < len(weather_state.hourly_forecast):
                 fcast = weather_state.hourly_forecast[idx]
                 t_str = fcast["time"]
-                draw.text((x_off, 245), t_str, font=font_xsmall, fill=(0, 0, 0))
-                draw.text((x_off, 265), f"{round(fcast['temp'])}°", font=font_small, fill=(0, 0, 0))
+                draw.text((x_off, 256), t_str, font=font_xsmall, fill=(0, 0, 0))
+                draw.text((x_off, 276), f"{round(fcast['temp'])}°", font=font_small, fill=(0, 0, 0))
                 x_off += 65
 
     # ========= RIGHT PANE: Window Decision (x: 210-400) =========

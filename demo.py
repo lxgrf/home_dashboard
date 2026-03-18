@@ -1,13 +1,14 @@
 import os
+
+# We are on macOS, so tell renderer to use a local font for demo BEFORE any other imports!
+os.environ["FONT_PATH"] = "/System/Library/Fonts/Supplemental/Arial.ttf"
+os.environ["FONT_BOLD_PATH"] = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+
 import requests
 import datetime
 from app.weather import weather_state
 from app.mqtt_client import sensor_state
 from app.renderer import render_dashboard
-
-# We are on macOS, so tell renderer to use a local font for demo
-os.environ["FONT_PATH"] = "/System/Library/Fonts/Supplemental/Arial.ttf"
-os.environ["FONT_BOLD_PATH"] = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
 
 def run_demo():
     # 1. Fetch real weather data from Open-Meteo
