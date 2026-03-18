@@ -53,7 +53,9 @@ def fetch_and_draw():
             
         except Exception as e:
             retries += 1
+            import traceback
             print(f"Network or display error (Attempt {retries}/{MAX_RETRIES}): {e}")
+            traceback.print_exc()
             time.sleep(10) # 10s cooldown before retry
             
     print(f"[{time.strftime('%H:%M:%S')}] Failed to update screen after {MAX_RETRIES} attempts.")
