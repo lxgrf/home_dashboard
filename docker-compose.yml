@@ -1,6 +1,5 @@
 services:
   dashboard:
-    build: .
     image: ghcr.io/lxgrf/home_dashboard:latest
     container_name: dashboard_app
     restart: unless-stopped
