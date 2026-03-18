@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build: .
+    image: ghcr.io/<ORG_NAME>/home_dashboard:latest # Replace ORG_NAME later via GH actions 
+    container_name: dashboard_app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - TZ=UTC
+      - LATITUDE=51.5072 # Optional: Change to your loc
+      - LONGITUDE=-0.1276
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - MQTT_TOPIC=zigbee2mqtt/+/settings
+    depends_on:
+      - mosquitto
+      
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mqtt_broker
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt:latest
+    container_name: zigbee2mqtt
+    restart: unless-stopped
+    volumes:
+      - ./zigbee2mqtt-data:/app/data
+      - /run/udev:/run/udev:ro
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0 # Default for Sonoff Dongle
+    ports:
+      - 8080:8080
+    environment:
+      - TZ=UTC
+    depends_on:
+      - mosquitto
