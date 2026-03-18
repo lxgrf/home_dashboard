@@ -1,6 +1,6 @@
 services:
   dashboard:
-    image: ghcr.io/lxgrf/home_dashboard:latest
+    image: ghcr.io/lxgrf/home_dashboard:master
     container_name: dashboard_app
     restart: unless-stopped
     ports:
