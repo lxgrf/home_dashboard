@@ -10,8 +10,8 @@ services:
       - "5000:5000"
     environment:
       - TZ=UTC
-      - LATITUDE=51.5072 # Optional: Change to your loc
-      - LONGITUDE=-0.1276
+      - LATITUDE=${LATITUDE}
+      - LONGITUDE=${LONGITUDE}
       - MQTT_HOST=mosquitto
       - MQTT_PORT=1883
       - MQTT_TOPIC=zigbee2mqtt/+/settings

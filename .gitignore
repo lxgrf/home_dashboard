@@ -1,0 +1,20 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary Image Files
+*.png
+!app/*.png
+
+# Docker
+zigbee2mqtt-data/
+mosquitto/data/
+mosquitto/log/
