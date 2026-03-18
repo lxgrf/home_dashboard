@@ -1,0 +1,15 @@
+services:
+  inky_viewer:
+    image: ghcr.io/lxgrf/home_dashboard_viewer:master
+    container_name: inky_viewer
+    restart: unless-stopped
+    privileged: true # Required for native GPIO hardware mapping
+    devices:
+      - "/dev/gpiomem:/dev/gpiomem"
+      - "/dev/i2c-1:/dev/i2c-1"
+      - "/dev/spidev0.0:/dev/spidev0.0"
+      - "/dev/spidev0.1:/dev/spidev0.1"
+      - "/dev/mem:/dev/mem"
+    environment:
+      - DASHBOARD_URL=${DASHBOARD_URL}
+      - UPDATE_INTERVAL=${UPDATE_INTERVAL:-600}

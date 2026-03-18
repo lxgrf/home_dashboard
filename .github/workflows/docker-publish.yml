@@ -55,3 +55,21 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Extract Docker metadata (Viewer)
+        id: meta-viewer
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}_viewer
+
+      - name: Build and push Viewer Docker image
+        id: build-and-push-viewer
+        uses: docker/build-push-action@v5
+        with:
+          context: ./viewer
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta-viewer.outputs.tags }}
+          labels: ${{ steps.meta-viewer.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
