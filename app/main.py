@@ -1,9 +1,14 @@
 from flask import Flask, send_file
 import io
 import time
+import logging
 from weather import start_weather_thread, weather_state
 from mqtt_client import start_mqtt_client, sensor_state
 from renderer import render_dashboard
+
+# Configure global logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(levelname)s | %(threadName)s | %(message)s')
+logger = logging.getLogger("Dashboard")
 
 app = Flask(__name__)
 
@@ -21,6 +26,8 @@ def get_dashboard():
     img.save(img_byte_arr, format='PNG')
     img_byte_arr.seek(0)
     
+    logger.info("Rendered and successfully served /dashboard.png")
+    
     # Disable cache to ensure display gets newest image
     response = send_file(img_byte_arr, mimetype='image/png')
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -31,4 +38,5 @@ def health():
     return {"status": "ok", "weather_updated_ago": time.time() - weather_state.last_update}
 
 if __name__ == '__main__':
+    logger.info("Starting Dashboard Application Server...")
     app.run(host='0.0.0.0', port=5000)

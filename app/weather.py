@@ -2,6 +2,9 @@ import requests
 import time
 import os
 import threading
+import logging
+
+logger = logging.getLogger("Weather")
 
 # Configuration
 LATITUDE = os.getenv("LATITUDE", "51.5072")
@@ -73,13 +76,13 @@ def fetch_weather_loop():
                 weather_state.hourly_forecast = forecasts
                 weather_state.last_update = time.time()
                 
-            print(f"Weather updated: {weather_state.current_temp}C, {weather_state.current_rh}% RH")
+            logger.info(f"Weather fetched successfully: {weather_state.current_temp}C, RH {weather_state.current_rh}%")
         except Exception as e:
-            print(f"Error fetching weather: {e}")
+            logger.error(f"Error fetching weather from Open-Meteo: {e}")
             
-        # Poll every 15 minutes
-        time.sleep(15 * 60)
+        # Poll every 10 minutes
+        time.sleep(10 * 60)
 
 def start_weather_thread():
-    t = threading.Thread(target=fetch_weather_loop, daemon=True)
+    t = threading.Thread(target=fetch_weather_loop, name="WeatherThread", daemon=True)
     t.start()

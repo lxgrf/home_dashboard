@@ -3,13 +3,13 @@ import json
 import os
 import threading
 import time
+import logging
+
+logger = logging.getLogger("MQTT")
 
 MQTT_HOST = os.getenv("MQTT_HOST", "mosquitto")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
-MQTT_TOPIC = os.getenv("MQTT_TOPIC", "zigbee2mqtt/+/settings") # Customize topic later based on sensor name
-# Typical format for Z2M sensor: zigbee2mqtt/Sensor_Name
-# We can listen to all and filter, or configure this strictly.
-# A broader string like 'zigbee2mqtt/#' lets us catch all sensors in case user doesn't know name.
+MQTT_TOPIC = os.getenv("MQTT_TOPIC", "zigbee2mqtt/+/settings")
 
 class SensorState:
     def __init__(self):
@@ -21,8 +21,7 @@ class SensorState:
 sensor_state = SensorState()
 
 def on_connect(client, userdata, flags, rc):
-    print(f"Connected to MQTT broker with result code {rc}")
-    # Subscribe to z2m root to find all temp/humidity sensors if they emit payload
+    logger.info(f"Connected to Mosquitto broker with code {rc}. Listening for Zigbee sensors...")
     client.subscribe("zigbee2mqtt/+")
 
 def on_message(client, userdata, msg):
@@ -34,7 +33,7 @@ def on_message(client, userdata, msg):
                 sensor_state.inside_temp = payload["temperature"]
                 sensor_state.inside_rh = payload["humidity"]
                 sensor_state.last_update = time.time()
-            print(f"Sensor updated: {sensor_state.inside_temp}C, {sensor_state.inside_rh}% RH")
+            logger.info(f"Zigbee payload matched: Inside Temp {sensor_state.inside_temp}C, RH {sensor_state.inside_rh}%")
     except Exception as e:
         # Ignore messages that aren't JSON or don't have temp/humidity
         pass
@@ -50,8 +49,8 @@ def start_mqtt_client():
                 client.connect(MQTT_HOST, MQTT_PORT, 60)
                 client.loop_forever()
             except Exception as e:
-                print(f"MQTT connection failed, retrying in 5 seconds... ({e})")
+                logger.error(f"MQTT disconnected, retrying in 5s... ({e})")
                 time.sleep(5)
                 
-    t = threading.Thread(target=loop_forever, daemon=True)
+    t = threading.Thread(target=loop_forever, name="MQTTThread", daemon=True)
     t.start()
