@@ -45,9 +45,10 @@ def render_dashboard(weather_state, sensor_state):
 
     if w_code is not None:
         try:
-            icon = get_weather_icon(w_code, w_day, size="2x")
-            icon = icon.resize((88, 88), Image.Resampling.LANCZOS)
-            img.paste(icon, (292, top_y + 18), mask=icon if icon.mode == 'RGBA' else None)
+            # Huge 4x icon scaled and centered on the right pane's axis (x=310)
+            icon = get_weather_icon(w_code, w_day, size="4x")
+            icon = icon.resize((140, 140), Image.Resampling.LANCZOS)
+            img.paste(icon, (310 - 70, top_y + 6), mask=icon if icon.mode == 'RGBA' else None)
         except Exception:
             pass
 
@@ -80,9 +81,9 @@ def render_dashboard(weather_state, sensor_state):
                     break
 
             if is_safe_now:
-                timing_msg = f"Close\n{flip_time}" if flip_time else "Open\nAll Day"
+                timing_msg = f"Close at {flip_time}" if flip_time else "Open All Day"
             else:
-                timing_msg = f"Open\n{flip_time}" if flip_time else "Closed\nAll Day"
+                timing_msg = f"Open at {flip_time}" if flip_time else "Closed All Day"
 
     # ========= BOTTOM BAND: Indoor =========
     draw.line((0, split_y, 400, split_y), fill=(0, 0, 0), width=3)
@@ -90,29 +91,29 @@ def render_dashboard(weather_state, sensor_state):
     draw.text((12, bottom_y + 28), f"{in_temp}°", font=font_huge, fill=(0, 0, 0))
     draw.text((18, bottom_y + 88), f"RH {in_rh}%", font=font_small, fill=(90, 90, 90))
 
-    wx, wy = 248, bottom_y + 4
-    ww, wh = 126, 92
+    wx, wy = 310 - 40, 166
+    ww, wh = 80, 72
     
     if is_safe_now:
         # GREEN OPEN WINDOW (Polygons)
         frame_color = (0, 180, 0)
-        draw.rectangle((wx, wy, wx+ww, wy+wh), outline=frame_color, width=7)
+        draw.rectangle((wx, wy, wx+ww, wy+wh), outline=frame_color, width=6)
         # Left swung pane
-        draw.polygon([(wx, wy), (wx+28, wy-16), (wx+28, wy+wh+16), (wx, wy+wh)], fill=frame_color)
+        draw.polygon([(wx, wy), (wx+20, wy-12), (wx+20, wy+wh+12), (wx, wy+wh)], fill=frame_color)
         # Right swung pane
-        draw.polygon([(wx+ww, wy), (wx+ww-28, wy-16), (wx+ww-28, wy+wh+16), (wx+ww, wy+wh)], fill=frame_color)
+        draw.polygon([(wx+ww, wy), (wx+ww-20, wy-12), (wx+ww-20, wy+wh+12), (wx+ww, wy+wh)], fill=frame_color)
         
     else:
         # RED CLOSED WINDOW
         frame_color = (220, 0, 0)
         draw.rectangle((wx, wy, wx+ww, wy+wh), fill=frame_color)
-        pane_w = (ww - 24) // 2
-        pane_h = (wh - 24) // 2
-        draw.rectangle((wx+8, wy+8, wx+8+pane_w, wy+8+pane_h), fill=(255, 255, 255))
-        draw.rectangle((wx+16+pane_w, wy+8, wx+16+pane_w+pane_w, wy+8+pane_h), fill=(255, 255, 255))
-        draw.rectangle((wx+8, wy+16+pane_h, wx+8+pane_w, wy+16+pane_h+pane_h), fill=(255, 255, 255))
-        draw.rectangle((wx+16+pane_w, wy+16+pane_h, wx+16+pane_w+pane_w, wy+16+pane_h+pane_h), fill=(255, 255, 255))
+        pane_w = (ww - 16) // 2
+        pane_h = (wh - 16) // 2
+        draw.rectangle((wx+6, wy+6, wx+6+pane_w, wy+6+pane_h), fill=(255, 255, 255))
+        draw.rectangle((wx+10+pane_w, wy+6, wx+10+pane_w+pane_w, wy+6+pane_h), fill=(255, 255, 255))
+        draw.rectangle((wx+6, wy+10+pane_h, wx+6+pane_w, wy+10+pane_h+pane_h), fill=(255, 255, 255))
+        draw.rectangle((wx+10+pane_w, wy+10+pane_h, wx+10+pane_w+pane_w, wy+10+pane_h+pane_h), fill=(255, 255, 255))
 
-    draw.multiline_text((wx + ww // 2, bottom_y + 126), timing_msg, fill=(0, 0, 0), font=font_large, align="center", anchor="ma")
+    draw.text((310, wy + wh + 20), timing_msg, fill=(0, 0, 0), font=font_med, anchor="ma")
 
     return img
