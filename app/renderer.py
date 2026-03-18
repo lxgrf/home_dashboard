@@ -16,9 +16,8 @@ def render_dashboard(weather_state, sensor_state):
         font_large = ImageFont.truetype(FONT_BOLD_PATH, 32)
         font_med = ImageFont.truetype(FONT_BOLD_PATH, 24)
         font_small = ImageFont.truetype(FONT_PATH, 20)
-        font_xsmall = ImageFont.truetype(FONT_PATH, 16)
     except Exception:
-        font_huge = font_large = font_med = font_small = font_xsmall = ImageFont.load_default()
+        font_huge = font_large = font_med = font_small = ImageFont.load_default()
 
     # Raw numeric values for calculations
     w_temp_raw = weather_state.current_temp
@@ -36,7 +35,7 @@ def render_dashboard(weather_state, sensor_state):
     in_rh = in_rh_raw if in_rh_raw is not None else "--"
 
     top_y = 0
-    split_y = 166
+    split_y = 150
     bottom_y = split_y + 8
 
     # ========= TOP BAND: Outdoor =========
@@ -51,18 +50,6 @@ def render_dashboard(weather_state, sensor_state):
             img.paste(icon, (292, top_y + 18), mask=icon if icon.mode == 'RGBA' else None)
         except Exception:
             pass
-
-    forecast_line_y = split_y - 40
-    draw.line((12, forecast_line_y, 388, forecast_line_y), fill=(180, 180, 180), width=1)
-    draw.text((12, forecast_line_y + 4), "FORECAST", font=font_xsmall, fill=(0, 0, 0))
-    if hasattr(weather_state, 'hourly_forecast') and weather_state.hourly_forecast:
-        for x_off, idx in zip([22, 140, 258], [2, 5, 8]):
-            if idx < len(weather_state.hourly_forecast):
-                fcast = weather_state.hourly_forecast[idx]
-                t_str = fcast.get("time", "--:--")
-                temp_value = fcast.get('temp')
-                temp_str = f"{round(temp_value)}°" if temp_value is not None else "--°"
-                draw.text((x_off, forecast_line_y + 24), f"{t_str}  {temp_str}", font=font_xsmall, fill=(0, 0, 0))
 
     # ========= Window Decision =========
     if None in (w_temp_raw, w_rh_raw, in_temp_raw):
