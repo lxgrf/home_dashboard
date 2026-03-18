@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   dashboard:
     build: .
-    image: ghcr.io/<ORG_NAME>/home_dashboard:latest # Replace ORG_NAME later via GH actions 
+    image: ghcr.io/lxgrf/home_dashboard:latest
     container_name: dashboard_app
     restart: unless-stopped
     ports:
@@ -17,7 +15,7 @@ services:
       - MQTT_TOPIC=zigbee2mqtt/+/settings
     depends_on:
       - mosquitto
-      
+
   mosquitto:
     image: eclipse-mosquitto:2
     container_name: mqtt_broker
