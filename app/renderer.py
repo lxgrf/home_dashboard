@@ -1,7 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
-import requests
-import datetime
 from humidity_calc import get_resulting_indoor_rh
 from icons import get_weather_icon
 
@@ -14,7 +12,7 @@ def render_dashboard(weather_state, sensor_state):
     draw = ImageDraw.Draw(img)
 
     try:
-        font_huge = ImageFont.truetype(FONT_BOLD_PATH, 60)
+        font_huge = ImageFont.truetype(FONT_BOLD_PATH, 52)
         font_large = ImageFont.truetype(FONT_BOLD_PATH, 32)
         font_med = ImageFont.truetype(FONT_BOLD_PATH, 24)
         font_small = ImageFont.truetype(FONT_PATH, 20)
@@ -37,42 +35,36 @@ def render_dashboard(weather_state, sensor_state):
     in_temp = in_temp_raw if in_temp_raw is not None else "--"
     in_rh = in_rh_raw if in_rh_raw is not None else "--"
 
-    # ========= LEFT PANE: Weather & Sensor (x: 0-190) =========
-    # Outdoor
-    draw.text((10, 0), "OUTDOOR", font=font_med, fill=(0, 0, 0))
+    top_y = 0
+    split_y = 156
+    bottom_y = split_y + 8
+
+    # ========= TOP BAND: Outdoor =========
+    draw.text((12, top_y + 8), "OUTDOOR", font=font_med, fill=(0, 0, 0))
+    draw.text((12, top_y + 34), f"{w_temp}°", font=font_huge, fill=(0, 0, 0))
+    draw.text((18, top_y + 94), f"RH {w_rh}%", font=font_small, fill=(90, 90, 90))
+
     if w_code is not None:
         try:
             icon = get_weather_icon(w_code, w_day, size="2x")
-            # Shrink icon slightly so it doesn't overlap larger text
-            icon = icon.resize((80, 80), Image.Resampling.LANCZOS)
-            img.paste(icon, (110, 10), mask=icon if icon.mode == 'RGBA' else None)
+            icon = icon.resize((88, 88), Image.Resampling.LANCZOS)
+            img.paste(icon, (292, top_y + 18), mask=icon if icon.mode == 'RGBA' else None)
         except Exception:
             pass
-            
-    draw.text((10, 24), f"{w_temp}°", font=font_huge, fill=(0, 0, 0))
-    draw.text((10, 88), f"RH: {w_rh}%", font=font_small, fill=(100, 100, 100))
 
-    # Indoor
-    draw.text((10, 116), "INDOOR", font=font_med, fill=(0, 0, 0))
-    draw.text((10, 140), f"{in_temp}°", font=font_huge, fill=(0, 0, 0))
-    # Place RH below the INDOOR temp but nicely aligned
-    draw.text((10, 204), f"RH: {in_rh}%", font=font_small, fill=(100, 100, 100))
-
-    draw.line((210, 10, 210, 290), fill=(0, 0, 0), width=3)
-
-    # Forecast Row (Bottom Left - Space out wider)
-    draw.text((10, 236), "FORECAST", font=font_xsmall, fill=(0, 0, 0))
+    forecast_line_y = split_y - 40
+    draw.line((12, forecast_line_y, 388, forecast_line_y), fill=(180, 180, 180), width=1)
+    draw.text((12, forecast_line_y + 4), "FORECAST", font=font_xsmall, fill=(0, 0, 0))
     if hasattr(weather_state, 'hourly_forecast') and weather_state.hourly_forecast:
-        x_off = 10
-        for idx in [2, 5, 8]:
+        for x_off, idx in zip([22, 140, 258], [2, 5, 8]):
             if idx < len(weather_state.hourly_forecast):
                 fcast = weather_state.hourly_forecast[idx]
-                t_str = fcast["time"]
-                draw.text((x_off, 256), t_str, font=font_xsmall, fill=(0, 0, 0))
-                draw.text((x_off, 276), f"{round(fcast['temp'])}°", font=font_small, fill=(0, 0, 0))
-                x_off += 65
+                t_str = fcast.get("time", "--:--")
+                temp_value = fcast.get('temp')
+                temp_str = f"{round(temp_value)}°" if temp_value is not None else "--°"
+                draw.text((x_off, forecast_line_y + 24), f"{t_str}  {temp_str}", font=font_xsmall, fill=(0, 0, 0))
 
-    # ========= RIGHT PANE: Window Decision (x: 210-400) =========
+    # ========= Window Decision =========
     if None in (w_temp_raw, w_rh_raw, in_temp_raw):
         is_safe_now = False # Default
         timing_msg = "Wait data"
@@ -105,18 +97,23 @@ def render_dashboard(weather_state, sensor_state):
             else:
                 timing_msg = f"Open\n{flip_time}" if flip_time else "Closed\nAll Day"
 
-    # Draw Window Graphic centrally on right pane
-    wx, wy = 230, 20
-    ww, wh = 150, 150
+    # ========= BOTTOM BAND: Indoor =========
+    draw.line((0, split_y, 400, split_y), fill=(0, 0, 0), width=3)
+    draw.text((12, bottom_y + 2), "INDOOR", font=font_med, fill=(0, 0, 0))
+    draw.text((12, bottom_y + 28), f"{in_temp}°", font=font_huge, fill=(0, 0, 0))
+    draw.text((18, bottom_y + 88), f"RH {in_rh}%", font=font_small, fill=(90, 90, 90))
+
+    wx, wy = 248, bottom_y + 4
+    ww, wh = 126, 92
     
     if is_safe_now:
         # GREEN OPEN WINDOW (Polygons)
         frame_color = (0, 180, 0)
-        draw.rectangle((wx, wy, wx+ww, wy+wh), outline=frame_color, width=8)
+        draw.rectangle((wx, wy, wx+ww, wy+wh), outline=frame_color, width=7)
         # Left swung pane
-        draw.polygon([(wx, wy), (wx+35, wy-20), (wx+35, wy+wh+20), (wx, wy+wh)], fill=frame_color)
+        draw.polygon([(wx, wy), (wx+28, wy-16), (wx+28, wy+wh+16), (wx, wy+wh)], fill=frame_color)
         # Right swung pane
-        draw.polygon([(wx+ww, wy), (wx+ww-35, wy-20), (wx+ww-35, wy+wh+20), (wx+ww, wy+wh)], fill=frame_color)
+        draw.polygon([(wx+ww, wy), (wx+ww-28, wy-16), (wx+ww-28, wy+wh+16), (wx+ww, wy+wh)], fill=frame_color)
         
     else:
         # RED CLOSED WINDOW
@@ -129,7 +126,7 @@ def render_dashboard(weather_state, sensor_state):
         draw.rectangle((wx+8, wy+16+pane_h, wx+8+pane_w, wy+16+pane_h+pane_h), fill=(255, 255, 255))
         draw.rectangle((wx+16+pane_w, wy+16+pane_h, wx+16+pane_w+pane_w, wy+16+pane_h+pane_h), fill=(255, 255, 255))
 
-    # Add big centered Timing prompt beneath window
-    draw.multiline_text((wx+ww//2, 210), timing_msg, fill=(0, 0, 0), font=font_large, align="center", anchor="ma")
+    draw.text((248, bottom_y + 108), "WINDOW", font=font_xsmall, fill=(0, 0, 0))
+    draw.multiline_text((wx + ww // 2, bottom_y + 134), timing_msg, fill=(0, 0, 0), font=font_large, align="center", anchor="ma")
 
     return img
