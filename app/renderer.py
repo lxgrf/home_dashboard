@@ -36,7 +36,7 @@ def render_dashboard(weather_state, sensor_state):
     in_rh = in_rh_raw if in_rh_raw is not None else "--"
 
     top_y = 0
-    split_y = 156
+    split_y = 166
     bottom_y = split_y + 8
 
     # ========= TOP BAND: Outdoor =========
@@ -126,7 +126,6 @@ def render_dashboard(weather_state, sensor_state):
         draw.rectangle((wx+8, wy+16+pane_h, wx+8+pane_w, wy+16+pane_h+pane_h), fill=(255, 255, 255))
         draw.rectangle((wx+16+pane_w, wy+16+pane_h, wx+16+pane_w+pane_w, wy+16+pane_h+pane_h), fill=(255, 255, 255))
 
-    draw.text((248, bottom_y + 108), "WINDOW", font=font_xsmall, fill=(0, 0, 0))
-    draw.multiline_text((wx + ww // 2, bottom_y + 134), timing_msg, fill=(0, 0, 0), font=font_large, align="center", anchor="ma")
+    draw.multiline_text((wx + ww // 2, bottom_y + 126), timing_msg, fill=(0, 0, 0), font=font_large, align="center", anchor="ma")
 
     return img
