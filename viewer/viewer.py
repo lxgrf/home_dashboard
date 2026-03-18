@@ -15,14 +15,20 @@ except ImportError:
 DASHBOARD_URL = os.environ.get("DASHBOARD_URL", "http://192.168.1.125:5000/dashboard.png")
 UPDATE_INTERVAL = int(os.environ.get("UPDATE_INTERVAL", 600))  # 10 minutes default
 MAX_RETRIES = 5
+INKY_COLOR = os.environ.get("INKY_COLOR", "red")
 
 print("Initializing Inky pHAT/wHAT display over SPI/I2C...")
 try:
     display = auto()
     print(f"Success! Detected ePaper Display: {display.resolution[0]}x{display.resolution[1]} ({display.color})")
 except Exception as e:
-    print(f"CRITICAL: Failed to auto-detect Inky screen hardware. Is SPI/I2C mapped correctly? Error: {e}")
-    sys.exit(1)
+    print(f"Auto-detect failed ({e}). Falling back to manual InkyWHAT initialization...")
+    from inky import InkyWHAT
+    
+    # Defaults to 'red' corresponding to Black/White/Red wHATs, but can be overridden
+    inky_color = os.environ.get("INKY_COLOR", "red")
+    display = InkyWHAT(inky_color)
+    print(f"Success! Manually initialized InkyWHAT ({inky_color})")
 
 def fetch_and_draw():
     retries = 0
