@@ -1,12 +1,15 @@
-FROM python:3.11-slim
+FROM python:3.9-alpine
 
 # The Pimoroni Inky hardware library requires physical GPIO controls (RPi.GPIO and spidev).
-# These require native C compilers during pip wheel negotiation.
-RUN apt-get update && apt-get install -y \
+# We use apk (Alpine) since it natively supports the linux/arm/v6 architecture matrix.
+RUN apk add --no-cache \
     gcc \
+    musl-dev \
     python3-dev \
-    libi2c-dev \
-    && rm -rf /var/lib/apt/lists/*
+    linux-headers \
+    zlib-dev \
+    jpeg-dev \
+    freetype-dev
 
 WORKDIR /app
 
