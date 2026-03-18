@@ -22,14 +22,20 @@ def render_dashboard(weather_state, sensor_state):
     except Exception:
         font_huge = font_large = font_med = font_small = font_xsmall = ImageFont.load_default()
 
-    # Variables
-    w_temp = weather_state.current_temp if weather_state.current_temp is not None else "--"
-    w_rh = weather_state.current_rh if weather_state.current_rh is not None else "--"
+    # Raw numeric values for calculations
+    w_temp_raw = weather_state.current_temp
+    w_rh_raw = weather_state.current_rh
+    in_temp_raw = sensor_state.inside_temp
+    in_rh_raw = sensor_state.inside_rh
+
+    # Display-safe values
+    w_temp = w_temp_raw if w_temp_raw is not None else "--"
+    w_rh = w_rh_raw if w_rh_raw is not None else "--"
     w_code = weather_state.weather_code
     w_day = weather_state.is_day
 
-    in_temp = sensor_state.inside_temp if sensor_state.inside_temp is not None else "--"
-    in_rh = sensor_state.inside_rh if sensor_state.inside_rh is not None else "--"
+    in_temp = in_temp_raw if in_temp_raw is not None else "--"
+    in_rh = in_rh_raw if in_rh_raw is not None else "--"
 
     # ========= LEFT PANE: Weather & Sensor (x: 0-190) =========
     # Outdoor
@@ -67,25 +73,37 @@ def render_dashboard(weather_state, sensor_state):
                 x_off += 65
 
     # ========= RIGHT PANE: Window Decision (x: 210-400) =========
-    if None in (w_temp, weather_state.current_rh, in_temp):
+    if None in (w_temp_raw, w_rh_raw, in_temp_raw):
         is_safe_now = False # Default
         timing_msg = "Wait data"
     else:
-        current_resulting_rh = get_resulting_indoor_rh(w_temp, weather_state.current_rh, in_temp)
-        is_safe_now = current_resulting_rh < 55.0
-        
-        flip_time = None
-        for fcast in weather_state.hourly_forecast:
-            f_rh = get_resulting_indoor_rh(fcast['temp'], fcast['rh'], in_temp)
-            f_safe = f_rh < 55.0
-            if f_safe != is_safe_now:
-                flip_time = fcast['time']
-                break
-                
-        if is_safe_now:
-            timing_msg = f"Close\n{flip_time}" if flip_time else "Open\nAll Day"
+        try:
+            current_resulting_rh = get_resulting_indoor_rh(w_temp_raw, w_rh_raw, in_temp_raw)
+        except (TypeError, ValueError):
+            current_resulting_rh = None
+
+        if current_resulting_rh is None:
+            is_safe_now = False
+            timing_msg = "Wait data"
         else:
-            timing_msg = f"Open\n{flip_time}" if flip_time else "Closed\nAll Day"
+            is_safe_now = current_resulting_rh < 55.0
+
+            flip_time = None
+            for fcast in getattr(weather_state, 'hourly_forecast', []) or []:
+                try:
+                    f_rh = get_resulting_indoor_rh(fcast['temp'], fcast['rh'], in_temp_raw)
+                except (TypeError, ValueError, KeyError):
+                    continue
+
+                f_safe = f_rh < 55.0
+                if f_safe != is_safe_now:
+                    flip_time = fcast.get('time', '--:--')
+                    break
+
+            if is_safe_now:
+                timing_msg = f"Close\n{flip_time}" if flip_time else "Open\nAll Day"
+            else:
+                timing_msg = f"Open\n{flip_time}" if flip_time else "Closed\nAll Day"
 
     # Draw Window Graphic centrally on right pane
     wx, wy = 230, 20
