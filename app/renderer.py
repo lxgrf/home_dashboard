@@ -5,10 +5,6 @@ import datetime
 from humidity_calc import get_resulting_indoor_rh
 from icons import get_weather_icon
 
-# We are on macOS, so tell renderer to use a local font for demo BEFORE importing renderer
-os.environ["FONT_PATH"] = "/System/Library/Fonts/Supplemental/Arial.ttf"
-os.environ["FONT_BOLD_PATH"] = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
-
 FONT_PATH = os.environ.get("FONT_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
 FONT_BOLD_PATH = os.environ.get("FONT_BOLD_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
 
