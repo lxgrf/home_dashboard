@@ -20,7 +20,7 @@ INKY_COLOR = os.environ.get("INKY_COLOR", "red")
 print("Initializing Inky pHAT/wHAT display over SPI/I2C...")
 try:
     display = auto()
-    print(f"Success! Detected ePaper Display: {display.resolution[0]}x{display.resolution[1]} ({display.color})")
+    print(f"Success! Detected ePaper Display: {display.resolution[0]}x{display.resolution[1]} ({display.colour})")
 except Exception as e:
     print(f"Auto-detect failed ({e}). Falling back to manual InkyWHAT initialization...")
     from inky import InkyWHAT
@@ -46,6 +46,7 @@ def fetch_and_draw():
                 print(f"Warning: Image size {image.size} doesn't precisely match hardware {display.resolution}. Pillow will attempt to draw anyway.")
             
             # Flush image buffer natively to the ePaper controller
+            display.set_border(display.WHITE)
             display.set_image(image)
             display.show()
             print(f"[{time.strftime('%H:%M:%S')}] Hardware refresh complete. Sleeping for {UPDATE_INTERVAL // 60} minutes.")
