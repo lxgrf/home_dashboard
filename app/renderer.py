@@ -5,6 +5,7 @@ from icons import get_weather_icon
 
 FONT_PATH = os.environ.get("FONT_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
 FONT_BOLD_PATH = os.environ.get("FONT_BOLD_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
+TARGET_HUMIDITY = float(os.environ.get("TARGET_HUMIDITY", 55.0))
 
 def render_dashboard(weather_state, sensor_state):
     # Create 400x300 image (monochrome compatible colors)
@@ -66,7 +67,7 @@ def render_dashboard(weather_state, sensor_state):
             is_safe_now = False
             timing_msg = "Wait data"
         else:
-            is_safe_now = current_resulting_rh < 55.0
+            is_safe_now = current_resulting_rh < TARGET_HUMIDITY
 
             flip_time = None
             for fcast in getattr(weather_state, 'hourly_forecast', []) or []:
@@ -75,7 +76,7 @@ def render_dashboard(weather_state, sensor_state):
                 except (TypeError, ValueError, KeyError):
                     continue
 
-                f_safe = f_rh < 55.0
+                f_safe = f_rh < TARGET_HUMIDITY
                 if f_safe != is_safe_now:
                     flip_time = fcast.get('time', '--:--')
                     break

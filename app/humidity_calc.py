@@ -1,4 +1,7 @@
 import math
+import os
+
+TARGET_HUMIDITY = float(os.environ.get("TARGET_HUMIDITY", 55.0))
 
 def calculate_absolute_humidity(temp_c: float, rh_percent: float) -> float:
     """
@@ -27,11 +30,12 @@ def calculate_resulting_rh(ah: float, target_temp_c: float) -> float:
     rh = (e / es) * 100.0
     return max(0.0, min(100.0, rh))
 
-def window_open_reduces_rh(outside_temp: float, outside_rh: float, inside_temp: float, target_rh_threshold: float = 55.0) -> bool:
+def window_open_reduces_rh(outside_temp: float, outside_rh: float, inside_temp: float, target_rh_threshold: float = None) -> bool:
     """
     Determines if bringing outside air inside and letting it reach inside_temp
     will result in a relative humidity below the target threshold.
     """
+    target_rh_threshold = target_rh_threshold if target_rh_threshold is not None else TARGET_HUMIDITY
     outside_ah = calculate_absolute_humidity(outside_temp, outside_rh)
     resulting_indoor_rh = calculate_resulting_rh(outside_ah, inside_temp)
     return resulting_indoor_rh < target_rh_threshold
