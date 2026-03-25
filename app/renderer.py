@@ -87,7 +87,7 @@ def render_dashboard(weather_state, sensor_state):
                 timing_msg = f"Open at {flip_time}" if flip_time else "Closed All Day"
 
     # ========= BOTTOM BAND: Indoor =========
-    draw.line((0, split_y, 400, split_y), fill=(0, 0, 0), width=3)
+    draw.line((0, split_y, 400, split_y), fill=(220, 0, 0), width=3)
     draw.text((12, bottom_y + 2), "INDOOR", font=font_med, fill=(0, 0, 0))
     draw.text((12, bottom_y + 28), f"{in_temp}°", font=font_huge, fill=(0, 0, 0))
     draw.text((18, bottom_y + 88), f"RH {in_rh}%", font=font_small, fill=(90, 90, 90))
@@ -96,8 +96,8 @@ def render_dashboard(weather_state, sensor_state):
     ww, wh = 80, 72
     
     if is_safe_now:
-        # GREEN OPEN WINDOW (Polygons)
-        frame_color = (0, 180, 0)
+        # BLACK OPEN WINDOW (Polygons)
+        frame_color = (0, 0, 0)
         draw.rectangle((wx, wy, wx+ww, wy+wh), outline=frame_color, width=6)
         # Left swung pane
         draw.polygon([(wx, wy), (wx+20, wy-12), (wx+20, wy+wh+12), (wx, wy+wh)], fill=frame_color)
