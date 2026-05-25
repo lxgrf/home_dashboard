@@ -56,10 +56,8 @@ def fetch_weather_loop():
             for offset in range(1, 25):
                 idx = current_idx + offset
                 if idx < len(hourly_times):
-                    # time is "YYYY-MM-DDTHH:MM", we only want the HH:MM or HH
-                    t_str = hourly_times[idx].split('T')[1]
                     forecasts.append({
-                        "time": t_str,
+                        "time": hourly_times[idx],  # full "YYYY-MM-DDTHH:MM"
                         "temp": data["hourly"]["temperature_2m"][idx],
                         "rh": data["hourly"]["relative_humidity_2m"][idx],
                         "code": data["hourly"]["weather_code"][idx],

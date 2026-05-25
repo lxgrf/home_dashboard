@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import os
+from datetime import datetime, date
 from humidity_calc import get_resulting_indoor_rh
 from icons import get_weather_icon
 
@@ -80,10 +81,19 @@ def render_dashboard(weather_state, sensor_state):
                     flip_time = fcast.get('time', '--:--')
                     break
 
+            def fmt_flip(iso_time):
+                try:
+                    dt = datetime.fromisoformat(iso_time)
+                    if dt.date() == date.today():
+                        return dt.strftime("%H:%M")
+                    return f"Tomorrow {dt.strftime('%H:%M')}"
+                except Exception:
+                    return iso_time
+
             if is_safe_now:
-                timing_msg = f"Close at {flip_time}" if flip_time else "Open All Day"
+                timing_msg = f"Close at {fmt_flip(flip_time)}" if flip_time else "Open All Day"
             else:
-                timing_msg = f"Open at {flip_time}" if flip_time else "Closed All Day"
+                timing_msg = f"Open at {fmt_flip(flip_time)}" if flip_time else "Closed All Day"
 
     # ========= BOTTOM BAND: Indoor =========
     draw.line((0, split_y, 400, split_y), fill=(0, 0, 0), width=3)
@@ -95,8 +105,8 @@ def render_dashboard(weather_state, sensor_state):
     ww, wh = 80, 72
     
     if is_safe_now:
-        # GREEN OPEN WINDOW (Polygons)
-        frame_color = (0, 180, 0)
+        # BLACK OPEN WINDOW (Polygons)
+        frame_color = (0, 0, 0)
         draw.rectangle((wx, wy, wx+ww, wy+wh), outline=frame_color, width=6)
         # Left swung pane
         draw.polygon([(wx, wy), (wx+20, wy-12), (wx+20, wy+wh+12), (wx, wy+wh)], fill=frame_color)
