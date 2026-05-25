@@ -6,6 +6,7 @@ from icons import get_weather_icon
 
 FONT_PATH = os.environ.get("FONT_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
 FONT_BOLD_PATH = os.environ.get("FONT_BOLD_PATH", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
+TARGET_HUMIDITY = float(os.environ.get("TARGET_HUMIDITY", 55.0))
 
 def render_dashboard(weather_state, sensor_state):
     # Create 400x300 image (monochrome compatible colors)
@@ -67,7 +68,7 @@ def render_dashboard(weather_state, sensor_state):
             is_safe_now = False
             timing_msg = "Wait data"
         else:
-            is_safe_now = current_resulting_rh < 55.0
+            is_safe_now = current_resulting_rh < TARGET_HUMIDITY
 
             flip_time = None
             for fcast in getattr(weather_state, 'hourly_forecast', []) or []:
@@ -76,7 +77,7 @@ def render_dashboard(weather_state, sensor_state):
                 except (TypeError, ValueError, KeyError):
                     continue
 
-                f_safe = f_rh < 55.0
+                f_safe = f_rh < TARGET_HUMIDITY
                 if f_safe != is_safe_now:
                     flip_time = fcast.get('time', '--:--')
                     break
@@ -96,7 +97,7 @@ def render_dashboard(weather_state, sensor_state):
                 timing_msg = f"Open at {fmt_flip(flip_time)}" if flip_time else "Closed All Day"
 
     # ========= BOTTOM BAND: Indoor =========
-    draw.line((0, split_y, 400, split_y), fill=(0, 0, 0), width=3)
+    draw.line((0, split_y, 400, split_y), fill=(220, 0, 0), width=3)
     draw.text((12, bottom_y + 2), "INDOOR", font=font_med, fill=(0, 0, 0))
     draw.text((12, bottom_y + 28), f"{in_temp}°", font=font_huge, fill=(0, 0, 0))
     draw.text((18, bottom_y + 88), f"RH {in_rh}%", font=font_small, fill=(90, 90, 90))
