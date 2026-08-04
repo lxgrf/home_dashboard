@@ -9,9 +9,15 @@ services:
       - TZ=Europe/London
       - LATITUDE=${LATITUDE}
       - LONGITUDE=${LONGITUDE}
+      - TARGET_HUMIDITY=${TARGET_HUMIDITY:-55.0}
       - MQTT_HOST=mosquitto
       - MQTT_PORT=1883
-      - MQTT_TOPIC=zigbee2mqtt/+/settings
+      - MQTT_TOPIC=${MQTT_TOPIC:-zigbee2mqtt/+}
+      # Leave unset if the devices are named after their zones in zigbee2mqtt
+      - ZONE_UPSTAIRS=${ZONE_UPSTAIRS:-}
+      - ZONE_DOWNSTAIRS=${ZONE_DOWNSTAIRS:-}
+      - ZONE_CONSERVATORY=${ZONE_CONSERVATORY:-}
+      - STALE_AFTER=${STALE_AFTER:-1800}
     depends_on:
       - mosquitto
     labels:
