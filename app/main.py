@@ -3,7 +3,7 @@ import io
 import time
 import logging
 from weather import start_weather_thread, weather_state
-from mqtt_client import start_mqtt_client, sensor_state
+from mqtt_client import start_mqtt_client, sensor_state, ZONE_SLOTS, ZONE_SOURCES
 from renderer import render_dashboard
 
 # Configure global logging
@@ -35,7 +35,38 @@ def get_dashboard():
 
 @app.route('/health')
 def health():
-    return {"status": "ok", "weather_updated_ago": time.time() - weather_state.last_update}
+    zones = sensor_state.zones()
+    return {
+        "status": "ok",
+        "weather_updated_ago": time.time() - weather_state.last_update,
+        "zones": {
+            slot: (None if reading is None else {
+                "sensor": reading.name,
+                "age_seconds": round(reading.age, 1),
+                "stale": reading.is_stale,
+            })
+            for slot, reading in zones.items()
+        },
+    }
+
+@app.route('/sensors')
+def sensors():
+    """
+    Every sensor the dashboard has actually heard from, and how each zone
+    resolves. Use this when a zone reads '--' to tell a dead sensor apart from
+    a friendly name that doesn't match what the app is looking for.
+    """
+    zones = sensor_state.zones()
+    return {
+        "sensors": sensor_state.all_sensors(),
+        "zones": {
+            slot: {
+                "looking_for": ZONE_SOURCES[slot],
+                "matched": zones[slot].name if zones[slot] else None,
+            }
+            for slot in ZONE_SLOTS
+        },
+    }
 
 if __name__ == '__main__':
     logger.info("Starting Dashboard Application Server...")
